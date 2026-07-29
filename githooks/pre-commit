@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Running pre-commit checks..."
+
+# Run ruff linter
+echo "➡️ Running Ruff linter..."
+uv run ruff check . --fix
+if [ $? -ne 0 ]; then
+    echo "Ruff linter failed! Please fix the errors before committing."
+    exit 1
+fi
+
+# Run ruff formatter
+echo "Running Ruff format check..."
+uv run ruff format --check .
+if [ $? -ne 0 ]; then
+    echo "Ruff formatter failed! Please run 'uv run ruff format .' to fix formatting."
+    exit 1
+fi
+
+# Run mypy
+echo "Running mypy..."
+uv run mypy src
+if [ $? -ne 0 ]; then
+    echo "Mypy type checking failed!"
+    exit 1
+fi
+
+# Run bandit
+echo "Running bandit..."
+uv run bandit -c pyproject.toml -r src
+if [ $? -ne 0 ]; then
+    echo "Bandit security check failed!"
+    exit 1
+fi
+
+echo "All pre-commit checks passed!"
+exit 0
